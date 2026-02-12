@@ -18,9 +18,6 @@ export class Resposta {
   @Column({ default: false })
   resposta_correta: boolean;
 
-  @Column()
-  id_pergunta: number;
-
   @ManyToOne(() => Pergunta, pergunta => pergunta.alternativas, {
     onDelete: 'CASCADE',
   })

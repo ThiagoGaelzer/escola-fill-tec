@@ -16,7 +16,7 @@ export class QuestionsService {
         private questionRepo: Repository<Pergunta>,
 
         @InjectRepository(Resposta)
-        private altRepo: Repository<Resposta>,
+        private respostaRepo: Repository<Resposta>,
     ) { }
 
     async create(dto: CreateQuestionDto): Promise<Pergunta> {
@@ -66,31 +66,80 @@ export class QuestionsService {
     }
 
     async update(id: number, dto: UpdateQuestionDTO) {
-        const question = await this.findOne(id);
 
-        if (dto.alternativas != undefined) {
+    const question = await this.questionRepo.findOne({
+        where: { id },
+        relations: ['alternativas'],
+    });
 
-            if (dto.alternativas.length !== 5) {
-                throw new BadRequestException(
-                    'A pergunta deve possuir exatamente 5 alternativas'
-                );
-            }
+    if (!question) {
+        throw new NotFoundException('Pergunta não encontrada');
+    }
 
-            const correctQuestion = dto.alternativas.filter(a => a.resposta_correta);
+    const { alternativas, ...questionData } = dto;
+    Object.assign(question, questionData);
 
-            if (correctQuestion.length !== 1) {
-                throw new BadRequestException('A pergunta deve ter exatamente uma alternativa correta');
-            }
+    if (alternativas !== undefined) {
 
-            question.alternativas = dto.alternativas as any;
+        if (alternativas.length !== 5) {
+            throw new BadRequestException(
+                'A pergunta deve possuir exatamente 5 alternativas'
+            );
         }
 
-        const { alternativas, ...questionData } = dto;
+        const correct = alternativas.filter(a => a.resposta_correta);
+        if (correct.length !== 1) {
+            throw new BadRequestException(
+                'A pergunta deve ter exatamente uma alternativa correta'
+            );
+        }
 
-        Object.assign(question, questionData);
+        const existing = question.alternativas;
 
-        return await this.questionRepo.save(question);
+        const existingMap = new Map(
+            existing.map(alt => [alt.id, alt])
+        );
+
+        const receivedIds = new Set<number>();
+
+        const finalAlternativas: Resposta[] = [];
+
+        for (const altDto of alternativas) {
+
+            if (altDto.id && existingMap.has(altDto.id)) {
+
+                const alt = existingMap.get(altDto.id)!;
+
+                alt.descricao = altDto.descricao;
+                alt.resposta_correta = altDto.resposta_correta;
+
+                finalAlternativas.push(alt);
+                receivedIds.add(alt.id);
+
+            } else {
+                const nova = this.respostaRepo.create({
+                    descricao: altDto.descricao,
+                    resposta_correta: altDto.resposta_correta,
+                    pergunta: question,
+                });
+
+                finalAlternativas.push(nova);
+            }
+        }
+
+        const toRemove = existing.filter(
+            alt => !receivedIds.has(alt.id)
+        );
+
+        if (toRemove.length > 0) {
+            await this.respostaRepo.remove(toRemove);
+        }
+
+        question.alternativas = finalAlternativas;
     }
+
+    return await this.questionRepo.save(question);
+}
 
     async remove(id: number) {
         const question = await this.findOne(id);
