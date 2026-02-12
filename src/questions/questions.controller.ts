@@ -1,12 +1,14 @@
-import { Body, Controller, Post, Get, Param, Patch, Delete } from '@nestjs/common';
+import { Body, Controller, Post, Get, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDTO } from './dto/update-question.dto';
+import { JwtAuthGuard } from 'src/authentication/guards/jwt-auth.guard';
 
 @Controller('questions')
 export class QuestionsController {
   constructor(private readonly service: QuestionsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() dto: CreateQuestionDto) {
     return this.service.create(dto);
@@ -22,6 +24,7 @@ export class QuestionsController {
     return this.service.findOne(Number(id));
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -30,6 +33,7 @@ export class QuestionsController {
     return this.service.update(Number(id), dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(Number(id));
