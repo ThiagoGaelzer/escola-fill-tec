@@ -21,18 +21,8 @@ export class QuestionsService {
 
     async create(dto: CreateQuestionDto): Promise<Pergunta> {
 
-        if (!dto.alternativas || dto.alternativas.length !== 5) {
-            throw new BadRequestException(
-                'A pergunta deve possuir exatamente 5 alternativas'
-            );
-        }
-
-        const isAlternativeCorrect = dto.alternativas.filter(a => a.resposta_correta);
-
-        if (isAlternativeCorrect.length !== 1) {
-            throw new BadRequestException(
-                'Deve existir exatamente uma alternativa correta',
-            );
+        if (dto.alternativas) {
+            this.validateAlternatives(dto.alternativas);
         }
 
         const question = this.questionRepo.create({
@@ -67,79 +57,68 @@ export class QuestionsService {
 
     async update(id: number, dto: UpdateQuestionDTO) {
 
-    const question = await this.questionRepo.findOne({
-        where: { id },
-        relations: ['alternativas'],
-    });
+        const question = await this.questionRepo.findOne({
+            where: { id },
+            relations: ['alternativas'],
+        });
 
-    if (!question) {
-        throw new NotFoundException('Pergunta não encontrada');
-    }
-
-    const { alternativas, ...questionData } = dto;
-    Object.assign(question, questionData);
-
-    if (alternativas !== undefined) {
-
-        if (alternativas.length !== 5) {
-            throw new BadRequestException(
-                'A pergunta deve possuir exatamente 5 alternativas'
-            );
+        if (!question) {
+            throw new NotFoundException('Pergunta não encontrada');
         }
 
-        const correct = alternativas.filter(a => a.resposta_correta);
-        if (correct.length !== 1) {
-            throw new BadRequestException(
-                'A pergunta deve ter exatamente uma alternativa correta'
+        const { alternativas, ...questionData } = dto;
+        Object.assign(question, questionData);
+
+        if (alternativas !== undefined) {
+
+            this.validateAlternatives(alternativas);
+
+            const existing = question.alternativas;
+
+            const existingMap = new Map(
+                existing.map(alt => [alt.id, alt])
             );
-        }
 
-        const existing = question.alternativas;
+            const receivedIds = new Set<number>();
 
-        const existingMap = new Map(
-            existing.map(alt => [alt.id, alt])
-        );
+            const finalAlternativas: Resposta[] = [];
 
-        const receivedIds = new Set<number>();
+            for (const altDto of alternativas) {
 
-        const finalAlternativas: Resposta[] = [];
+                if (altDto.id && existingMap.has(altDto.id)) {
 
-        for (const altDto of alternativas) {
+                    const alt = existingMap.get(altDto.id)!;
 
-            if (altDto.id && existingMap.has(altDto.id)) {
+                    alt.descricao = altDto.descricao;
+                    alt.resposta_correta = altDto.resposta_correta;
 
-                const alt = existingMap.get(altDto.id)!;
+                    finalAlternativas.push(alt);
+                    receivedIds.add(alt.id);
 
-                alt.descricao = altDto.descricao;
-                alt.resposta_correta = altDto.resposta_correta;
+                } else {
+                    const nova = this.respostaRepo.create({
+                        descricao: altDto.descricao,
+                        resposta_correta: altDto.resposta_correta,
+                        pergunta: question,
+                    });
 
-                finalAlternativas.push(alt);
-                receivedIds.add(alt.id);
-
-            } else {
-                const nova = this.respostaRepo.create({
-                    descricao: altDto.descricao,
-                    resposta_correta: altDto.resposta_correta,
-                    pergunta: question,
-                });
-
-                finalAlternativas.push(nova);
+                    finalAlternativas.push(nova);
+                }
             }
+
+            const toRemove = existing.filter(
+                alt => !receivedIds.has(alt.id)
+            );
+
+            if (toRemove.length > 0) {
+                await this.respostaRepo.remove(toRemove);
+            }
+
+            question.alternativas = finalAlternativas;
         }
 
-        const toRemove = existing.filter(
-            alt => !receivedIds.has(alt.id)
-        );
-
-        if (toRemove.length > 0) {
-            await this.respostaRepo.remove(toRemove);
-        }
-
-        question.alternativas = finalAlternativas;
+        return await this.questionRepo.save(question);
     }
-
-    return await this.questionRepo.save(question);
-}
 
     async remove(id: number) {
         const question = await this.findOne(id);
@@ -148,4 +127,21 @@ export class QuestionsService {
 
         return { message: 'Pergunta excluída com sucesso' };
     }
+
+    private validateAlternatives(alternativas: any[]) {
+        if (!alternativas || alternativas.length !== 5) {
+            throw new BadRequestException(
+                'A pergunta deve possuir exatamente 5 alternativas'
+            );
+        }
+
+        const correct = alternativas.filter(a => a.resposta_correta);
+
+        if (correct.length !== 1) {
+            throw new BadRequestException(
+                'A pergunta deve ter exatamente uma alternativa correta'
+            );
+        }
+    }
 }
+
