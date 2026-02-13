@@ -1,98 +1,81 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Escola Fill Tec API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Projeto de uma aplicação que simula tarefas simples de um sistema escolar para gerenciamento de usuários, matérias e perguntas com alternativas e respostas.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# Tecnologias Utilizadas
 
-## Description
+* Node.js (v24.13.0)
+* NestJS (v11.0.16)
+* Docker
+* PostgreSQL
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+# Funcionalidades
 
-## Project setup
+* Cadastro, consulta, alteração e exclusão de usuários
+* Cadastro, consulta, alteração e exclusão de perguntas e respostas
+* Autenticação de usuários via email e senha, com geração de Token para acesso de recursos protegidos.
 
-```bash
-$ npm install
+# Arquitetura
+
+A aplicação segue a arquitetura baseada em módulos do NestJS, implementando os princípios REST:
+
+# Executando o Projeto com Docker
+
+Pré-requisitos
+
+* Node.js instalado (v24.13.0 ou superior)
+* NestJS instalado (v11.0.16 ou superior)
+* Docker instalado
+* Docker Compose instalado
+* IDE compatível com Node.js e NestJS (recomendo o Visual Studio Code)
+
+Execução
+
+1. Clonar o repositório
+```
+git clone https://github.com/ThiagoGaelzer/escola-fill-tec.git
+cd escola-fill-tec
 ```
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+2. Subir os containers
+```
+docker-compose up --build
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+3. Acessar aplicação em:
+```
+http://localhost:3000
 ```
 
-## Deployment
+# Banco de Dados
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+SGBD: PostgreSQL
+Executado local (execução via container Docker é opcional)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Para fins de teste, a base de dados usada no desenvolvimento do aplicativo está disponível em:
+https://drive.google.com/file/d/1T0LFGenBS4DgQbk9xwoM71Wd9KxC8H5F/view?usp=sharing
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+## Como importar no PostgreSQL:
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+* Crie o banco de dados de destino: clique com o botão direito em "Databases" > Create > Database... e dê um nome a ele.
+* Clique com o botão direito sobre o banco de dados recém-criado e selecione "Restore...".
+* Configurações na aba Geral (General):
+  * Format: Selecione o formato Custom ou Tar.
+  * Filename: Clique no ícone de três pontos (...) para localizar e selecionar o arquivo de backup.
+* Executar: Clique no botão Restore. O progresso aparecerá no canto inferior direito da tela
 
-## Resources
+# Testando a API
 
-Check out a few resources that may come in handy when working with NestJS:
+As requisições utilizadas durante o desenvolvimento estão disponíveis em:
+https://drive.google.com/file/d/1sfCcbYCXmRPExFhY8bRciAAJzFqk8KPK/view?usp=sharing
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Como importar no Insomnia
 
-## Support
+* Abrir Insomnia
+* Clicar em Import
+* Selecionar o arquivo
+* Executar as requisições
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Autor
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Thiago Pereira Gaelzer
